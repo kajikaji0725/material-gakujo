@@ -1,6 +1,8 @@
 package crawle
 
 import (
+	"log"
+
 	"github.com/earlgray283/material-gakujo/api/db"
 	"github.com/szpp-dev-team/gakujo-api/gakujo"
 )
@@ -42,7 +44,14 @@ func (c *Crawler) CrawleSeiseki() error {
 	if err != nil {
 		return err
 	}
-	return c.controller.CreateSeisekis(seisekis, c.userID)
+	for _, seiseki := range seisekis {
+		err := c.controller.CreateFirstSeiseki(seiseki, c.userID)
+		if err != nil {
+			return err
+		}
+	}
+	log.Println("成績 crawle task completed")
+	return nil
 }
 
 /*

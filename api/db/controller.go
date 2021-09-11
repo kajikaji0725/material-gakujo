@@ -59,17 +59,21 @@ func (controller *Controller) FetchUserInfoBySessionID(sessionID string) (*model
 	return &userInfo, nil
 }
 
-func (controller *Controller) FetchUserInfoByName(gakujoUsername string) (*model.User, error) {
+func (controller *Controller) FetchUserInfoByName(gakujoUsername string) (*model.User, bool, error) {
 	var userInfo model.User
-	if err := controller.db.Table("users").Where("gakujo_username = ?", gakujoUsername).Find(&userInfo).Error; err != nil {
-		return nil, errors.WithStack(err)
+	if err := controller.db.Table("users").Where("gakujo_username = ?", gakujoUsername).First(&userInfo).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
-	return &userInfo, nil
+	return &userInfo, true, nil
 }
 
 func (controller *Controller) UpdateSession(session, gakujoUsername string, expires time.Time) error {
 	tx := controller.db.Begin()
-	err := tx.Table("users").Where("gakujo_username = ?", gakujoUsername).Update("session", session).Update("session_expires", expires).Error
+
+	err := tx.Table("users").Where("gakujo_username = ?", gakujoUsername).Updates(map[string]interface{}{"session": session, "session_expires": expires}).Error
 	if err != nil {
 		tx.Rollback()
 		return errors.WithStack(err)
@@ -104,23 +108,45 @@ func (controller *Controller) FetchSeisekis(gakujoUsername string) ([]gakujomode
 
 }
 
-func (controller *Controller) CreateSeisekis(gakujoSeisekis []*gakujomodel.SeisekiRow, userID int) error {
-	var gormSeisekis []model.Seiseki
-	for _, gakujoSeiseki := range gakujoSeisekis {
-		gormSeiseki := model.Seiseki{
-			UserID:    userID,
-			Seiseki:   *gakujoSeiseki,
-			CreatedAt: time.Now(),
-		}
-		gormSeisekis = append(gormSeisekis, gormSeiseki)
+// create first seiseki row. if duplicated, update update_at column
+func (controller *Controller) CreateFirstSeiseki(gakujoSeiseki *gakujomodel.SeisekiRow, userID int) error {
+	var gormSeiseki model.Seiseki
+	var err error
+	newGormSeiseki := model.Seiseki{
+		UserID:    userID,
+		Seiseki:   *gakujoSeiseki,
+		CreatedAt: time.Now(),
 	}
 
 	tx := controller.db.Begin()
-	err := tx.Table("seisekis").Create(gormSeisekis).Error
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	err = tx.Table("seisekis").
+		Where("user_id = ? AND seiseki_subject_name = ?", userID, gakujoSeiseki.SubjectName).
+		First(&gormSeiseki).Error
 	if err != nil {
-		tx.Rollback()
-		return errors.WithStack(err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = tx.Table("seisekis").Create(newGormSeiseki).Error
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	} else {
+		err = tx.Table("seisekis").
+			Where("user_id = ? AND seiseki_subject_name = ?", userID, gakujoSeiseki.SubjectName).
+			Update("updated_at", time.Now()).Error
+		if err != nil {
+			return err
+		}
 	}
-	tx.Commit()
+
 	return nil
 }

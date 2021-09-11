@@ -32,4 +32,5 @@ func (api *ApiServer) Crawle(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	_, _ = rw.Write([]byte("Crawle task finished"))
 }

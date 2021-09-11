@@ -2,7 +2,6 @@ package server
 
 import (
 	"crypto/subtle"
-	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -10,20 +9,24 @@ import (
 	"github.com/earlgray283/material-gakujo/api/db/model"
 	auth "github.com/earlgray283/material-gakujo/api/server/libauth"
 	"github.com/szpp-dev-team/gakujo-api/gakujo"
-	"gorm.io/gorm"
 )
 
 func (api *ApiServer) Login(rw http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("gakujo_username")
 	password := r.FormValue("gakujo_password")
 
-	user, err := api.controller.FetchUserInfoByName(username)
+	if username == "" || password == "" {
+		http.Error(rw, "username or password is empty", http.StatusBadRequest)
+		return
+	}
+
+	user, ok, err := api.controller.FetchUserInfoByName(username)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			http.Error(rw, "No such username.", http.StatusUnauthorized)
-			return
-		}
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(rw, "No such username.", http.StatusUnauthorized)
 		return
 	}
 
