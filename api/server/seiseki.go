@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func (api *ApiServer) FetchSeiseki(rw http.ResponseWriter, r *http.Request) {
-	gakujoUsername := r.Header.Get("gakujo_username")
-	seisekis, err := api.controller.FetchSeisekis(gakujoUsername)
+	userID, _ := strconv.Atoi(r.Header.Get("user_id"))
+	seisekis, err := api.controller.FetchSeisekis(userID)
 	if err != nil {
 		log.Println(err)
 		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)

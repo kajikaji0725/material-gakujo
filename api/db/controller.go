@@ -93,19 +93,13 @@ func (controller *Controller) CreateUser(user *model.User) error {
 	return nil
 }
 
-func (controller *Controller) FetchSeisekis(gakujoUsername string) ([]gakujomodel.SeisekiRow, error) {
+func (controller *Controller) FetchSeisekis(userID int) ([]model.Seiseki, error) {
 	var seisekis []model.Seiseki
-	if err := controller.db.Table("users").Where("gakujo_username = ?", gakujoUsername).Find(&seisekis).Error; err != nil {
+	if err := controller.db.Table("seisekis").Where("user_id = ?", userID).Find(&seisekis).Error; err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	var gakujoSeisekis []gakujomodel.SeisekiRow
-	for _, seiseki := range seisekis {
-		gakujoSeisekis = append(gakujoSeisekis, seiseki.Seiseki)
-	}
-
-	return gakujoSeisekis, nil
-
+	return seisekis, nil
 }
 
 // create first seiseki row. if duplicated, update update_at column
@@ -118,6 +112,13 @@ func (controller *Controller) CreateFirstSeiseki(gakujoSeiseki *gakujomodel.Seis
 		CreatedAt: time.Now(),
 	}
 
+	err = controller.db.Table("seisekis").
+		Where("user_id = ? AND seiseki_subject_name = ?", userID, gakujoSeiseki.SubjectName).
+		First(&gormSeiseki).Error
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
 	tx := controller.db.Begin()
 	defer func() {
 		if err != nil {
@@ -127,16 +128,9 @@ func (controller *Controller) CreateFirstSeiseki(gakujoSeiseki *gakujomodel.Seis
 		}
 	}()
 
-	err = tx.Table("seisekis").
-		Where("user_id = ? AND seiseki_subject_name = ?", userID, gakujoSeiseki.SubjectName).
-		First(&gormSeiseki).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err = tx.Table("seisekis").Create(newGormSeiseki).Error
-			if err != nil {
-				return err
-			}
-		} else {
+		err = tx.Table("seisekis").Create(&newGormSeiseki).Error
+		if err != nil {
 			return err
 		}
 	} else {

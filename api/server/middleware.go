@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/earlgray283/material-gakujo/api/db"
 	auth "github.com/earlgray283/material-gakujo/api/server/libauth"
@@ -43,7 +44,7 @@ func AuthMiddleware(controller *db.Controller) func(http.Handler) http.Handler {
 				return
 			}
 
-			r.Header.Set("gakujo_username", user.Username)
+			r.Header.Set("user_id", strconv.Itoa(user.ID))
 
 			h.ServeHTTP(rw, r)
 		})

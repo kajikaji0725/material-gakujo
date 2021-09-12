@@ -7,6 +7,8 @@ import (
 
 	"github.com/earlgray283/material-gakujo/api/db"
 	"github.com/earlgray283/material-gakujo/api/server"
+	"github.com/gorilla/handlers"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -26,8 +28,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	router := apiServer.Router()
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{http.MethodPost, http.MethodGet, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(router)
+	loggerRouter := handlers.LoggingHandler(os.Stdout, corsHandler)
+
 	log.Println("Server Started")
-	if err := http.ListenAndServe(":8080", apiServer.Router()); err != nil {
+	if err := http.ListenAndServe(":8080", loggerRouter); err != nil {
 		log.Fatal(err)
 	}
 }

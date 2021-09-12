@@ -29,9 +29,9 @@ func (api *ApiServer) Router() *mux.Router {
 	r := mux.NewRouter()
 
 	r.Use(LoggingMiddleware, AuthMiddleware(api.controller))
-	r.HandleFunc("/api/auth/login", api.Login).Methods(http.MethodPost).Headers("Content-Type", "application/x-www-form-urlencoded")
+	r.HandleFunc("/api/auth/login", api.Login).Methods(http.MethodPost).Headers("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 	r.HandleFunc("/api/auth/logout", api.Logout).Methods(http.MethodPost)
-	r.HandleFunc("/api/auth/register", api.RegistNewUser).Methods(http.MethodPost).Headers("Content-Type", "application/x-www-form-urlencoded")
+	r.HandleFunc("/api/auth/register", api.RegistNewUser).Methods(http.MethodPost).Headers("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 	r.HandleFunc("/api/crawle", api.Crawle).Methods(http.MethodPut)
 	r.HandleFunc("/api/seisekis", api.FetchSeiseki).Methods(http.MethodGet)
 

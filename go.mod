@@ -3,10 +3,12 @@ module github.com/earlgray283/material-gakujo
 go 1.17
 
 require (
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/pkg/errors v0.9.1
-	github.com/szpp-dev-team/gakujo-api v0.0.0-20210910163858-14fd45f98fe2
+	github.com/rs/cors v1.8.0
+	github.com/szpp-dev-team/gakujo-api v0.0.0-20210912061345-9cb170310909
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.15
 )
@@ -14,6 +16,7 @@ require (
 require (
 	github.com/PuerkitoBio/goquery v1.7.1 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
+	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
