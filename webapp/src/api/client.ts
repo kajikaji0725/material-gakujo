@@ -36,4 +36,19 @@ export class ApiClient {
     const resp = await this.client.post<void>("/auth/login", data);
     return resp.data;
   }
+
+  async register(userInfo: {
+    gakujoUsername: string;
+    gakujoPassword: string;
+    email: string;
+    username: string;
+  }): Promise<void> {
+    const data = new URLSearchParams();
+    data.set("gakujo_username", userInfo.gakujoUsername);
+    data.set("gakujo_password", userInfo.gakujoPassword);
+    data.set("email", userInfo.email);
+    data.set("username", userInfo.username);
+    const resp = await this.client.post<void>("/auth/register", data);
+    return resp.data;
+  }
 }

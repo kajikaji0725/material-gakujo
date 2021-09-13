@@ -6,6 +6,7 @@ import { SignInPage } from "./pages/SignInPage";
 import { ApiClient } from "./api/client";
 import { SeisekiPage } from "./pages/SeisekiPage";
 import { CookiesProvider } from "react-cookie";
+import { RegisterPage } from "./pages/RegisterPage";
 
 export const ApiClientContext = createContext(
   new ApiClient("http://localhost:8081/api")
@@ -20,7 +21,8 @@ function App(): JSX.Element {
         <BrowserRouter>
           <Navbar />
           <Route exact path="/" component={HomePage} />
-          <Route exact path="/signin" component={SignInPage} />
+          <Route exact path="/auth/signin" component={SignInPage} />
+          <Route exact path="/auth/register" component={RegisterPage} />
           <Route exact path="/seiseki" component={SeisekiPage} />
         </BrowserRouter>
       </ApiClientContext.Provider>

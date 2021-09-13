@@ -16,7 +16,7 @@ export function Navbar(): JSX.Element {
               <PersonIcon style={{ fill: "black" }} />
             </IconButton>
           ) : (
-            <Link to="/signin">Login</Link>
+            <Link to="/auth/signin">Login</Link>
           )}
         </Toolbar>
       </AppBar>
