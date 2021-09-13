@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: ./api/Dockerfile
     container_name: material-gakujo-api
+    restart: always
     environment: 
       - CRYPTO_KEY=passw0rdpassw0rdpassw0rdpassw0rd
     depends_on: 
@@ -23,3 +24,13 @@ services:
     user: root
     ports:
       - 5432:5432
+
+  webapp:
+    build:
+      context: webapp
+      dockerfile: ./Dockerfile
+    container_name: material-gakujo-webapp
+    depends_on:
+      - api
+    ports:
+      - 5000:5000

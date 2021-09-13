@@ -30,7 +30,7 @@ func main() {
 
 	router := apiServer.Router()
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5000"},
 		AllowedMethods:   []string{http.MethodPost, http.MethodGet, http.MethodPut, http.MethodDelete, http.MethodOptions},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
