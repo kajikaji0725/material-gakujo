@@ -38,6 +38,7 @@ func (api *ApiServer) Router() *mux.Router {
 	r.HandleFunc("/api/auth/register", api.RegistNewUser).Methods(http.MethodPost).Headers("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 	r.HandleFunc("/api/crawle", api.Crawle).Methods(http.MethodPut)
 	r.HandleFunc("/api/seisekis", api.FetchSeiseki).Methods(http.MethodGet)
+	r.HandleFunc("/api/profile", api.FetchSeiseki).Methods(http.MethodGet)
 
 	return r
 }

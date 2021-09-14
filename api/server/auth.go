@@ -2,6 +2,7 @@ package server
 
 import (
 	"crypto/subtle"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -112,6 +113,22 @@ func (api *ApiServer) RegistNewUser(rw http.ResponseWriter, r *http.Request) {
 	*/
 
 	_, _ = rw.Write([]byte("success"))
+}
+
+// check session and return user info
+func (api *ApiServer) FetchUser(rw http.ResponseWriter, r *http.Request) {
+	cookie, _ := r.Cookie("GAKUJO_SESSION")
+	session := cookie.Value
+
+	user, err := api.controller.FetchUserInfoBySessionID(session)
+	if err != nil {
+		log.Println(err)
+		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(rw).Encode(user)
 }
 
 func checkGakujoUser(username, password string) error {
