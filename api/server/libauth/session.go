@@ -75,3 +75,14 @@ func generateSessionID() string {
 	b := securecookie.GenerateRandomKey(11)
 	return hex.EncodeToString(b)
 }
+
+func NewRemovedCookie() *http.Cookie {
+	cookie := http.Cookie{
+		Name:    "GAKUJO_SESSION",
+		Expires: time.Now(),
+		//Secure:   true,
+		HttpOnly: true,
+	}
+
+	return &cookie
+}

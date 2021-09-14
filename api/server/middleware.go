@@ -33,10 +33,7 @@ func AuthMiddleware(sessionController *auth.SessionController) func(http.Handler
 				return
 			}
 			if !ok {
-				sessionCookie, err := sessionController.RemoveSession(user.GakujoUsername)
-				if err != nil {
-					log.Println(err)
-				}
+				sessionCookie := auth.NewRemovedCookie()
 				http.SetCookie(rw, sessionCookie)
 				log.Println("Session is not valid")
 				http.Error(rw, "Session is not valid. Please login again.", http.StatusUnauthorized)

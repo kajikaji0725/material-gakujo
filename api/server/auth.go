@@ -101,13 +101,15 @@ func (api *ApiServer) RegistNewUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionCookie, err := api.sessionController.GenerateNewSession(gakujoUsername)
-	if err != nil {
-		log.Println(err)
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	http.SetCookie(rw, sessionCookie)
+	/*
+		sessionCookie, err := api.sessionController.GenerateNewSession(gakujoUsername)
+		if err != nil {
+			log.Println(err)
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.SetCookie(rw, sessionCookie)
+	*/
 
 	_, _ = rw.Write([]byte("success"))
 }
