@@ -35,6 +35,7 @@ func (sc *SessionController) GenerateNewSession(gakujoUsername string) (*http.Co
 		Expires: expires,
 		//Secure:   true,
 		HttpOnly: true,
+		Path:     "/",
 	}
 
 	return &cookie, nil
@@ -49,7 +50,6 @@ func (sc *SessionController) RemoveSession(gakujoUsername string) (*http.Cookie,
 		Name: "GAKUJO_SESSION",
 		//Secure:   true,
 		HttpOnly: true,
-		Path:     "/",
 	}
 
 	return &cookie, nil
