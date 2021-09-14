@@ -12,15 +12,15 @@ import (
 )
 
 func (api *ApiServer) Login(rw http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("gakujo_username")
-	password := r.FormValue("gakujo_password")
+	gakujoUsername := r.FormValue("gakujo_username")
+	gakujoPassword := r.FormValue("gakujo_password")
 
-	if username == "" || password == "" {
+	if gakujoUsername == "" || gakujoPassword == "" {
 		http.Error(rw, "username or password is empty", http.StatusBadRequest)
 		return
 	}
 
-	user, ok, err := api.controller.FetchUserInfoByName(username)
+	user, ok, err := api.controller.FetchUserInfoByName(gakujoUsername)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
@@ -35,21 +35,18 @@ func (api *ApiServer) Login(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	if subtle.ConstantTimeCompare([]byte(password), gakujoDecryptedPassword) != 1 {
-		log.Println(password, gakujoDecryptedPassword)
+	if subtle.ConstantTimeCompare([]byte(gakujoPassword), gakujoDecryptedPassword) != 1 {
+		log.Println(gakujoPassword, gakujoDecryptedPassword)
 		http.Error(rw, "username or password is invalid", http.StatusUnauthorized)
 		return
 	}
 
-	sessionValue := auth.GenSessionID()
-	expires := time.Now().Add(7 * 24 * time.Hour)
-	if err := api.controller.UpdateSession(string(sessionValue), username, expires); err != nil {
+	sessionCookie, err := api.sessionController.GenerateNewSession(gakujoUsername)
+	if err != nil {
 		log.Println(err)
-		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	sessionCookie := auth.NewCookie(string(sessionValue), expires)
 	http.SetCookie(rw, sessionCookie)
 }
 
@@ -104,15 +101,12 @@ func (api *ApiServer) RegistNewUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionValue := auth.GenSessionID()
-	expires := time.Now().Add(7 * 24 * time.Hour)
-	if err := api.controller.UpdateSession(string(sessionValue), username, expires); err != nil {
+	sessionCookie, err := api.sessionController.GenerateNewSession(gakujoUsername)
+	if err != nil {
 		log.Println(err)
-		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	sessionCookie := auth.NewCookie(string(sessionValue), expires)
 	http.SetCookie(rw, sessionCookie)
 
 	_, _ = rw.Write([]byte("success"))

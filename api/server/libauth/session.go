@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/hex"
+	"net/http"
 	"time"
 
 	"github.com/earlgray283/material-gakujo/api/db"
@@ -11,8 +12,50 @@ import (
 	"gorm.io/gorm"
 )
 
-func CheckSession(controller *db.Controller, sessionID string) (*model.User, bool, error) {
-	user, err := controller.FetchUserInfoBySessionID(sessionID)
+type SessionController struct {
+	controller *db.Controller
+}
+
+func NewSessionController(controller *db.Controller) *SessionController {
+	return &SessionController{
+		controller: controller,
+	}
+}
+
+func (sc *SessionController) GenerateNewSession(gakujoUsername string) (*http.Cookie, error) {
+	session := generateSessionID()
+	expires := time.Now().Add(7 * 24 * time.Hour)
+	if err := sc.controller.UpdateSession(session, gakujoUsername, expires); err != nil {
+		return nil, err
+	}
+
+	cookie := http.Cookie{
+		Name:    "GAKUJO_SESSION",
+		Value:   session,
+		Expires: expires,
+		//Secure:   true,
+		HttpOnly: true,
+	}
+
+	return &cookie, nil
+}
+
+func (sc *SessionController) RemoveSession(gakujoUsername string) (*http.Cookie, error) {
+	if err := sc.controller.UpdateSession("", gakujoUsername, time.Now()); err != nil {
+		return nil, err
+	}
+
+	cookie := http.Cookie{
+		Name: "GAKUJO_SESSION",
+		//Secure:   true,
+		HttpOnly: true,
+	}
+
+	return &cookie, nil
+}
+
+func (sc *SessionController) CheckSession(sessionID string) (*model.User, bool, error) {
+	user, err := sc.controller.FetchUserInfoBySessionID(sessionID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, false, nil
@@ -28,7 +71,7 @@ func CheckSession(controller *db.Controller, sessionID string) (*model.User, boo
 	return user, true, nil
 }
 
-func GenSessionID() string {
+func generateSessionID() string {
 	b := securecookie.GenerateRandomKey(11)
 	return hex.EncodeToString(b)
 }

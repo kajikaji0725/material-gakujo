@@ -9,11 +9,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/earlgray283/material-gakujo/api/db"
 	auth "github.com/earlgray283/material-gakujo/api/server/libauth"
 )
 
-func AuthMiddleware(controller *db.Controller) func(http.Handler) http.Handler {
+func AuthMiddleware(sessionController *auth.SessionController) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			session, err := r.Cookie("GAKUJO_SESSION")
@@ -27,13 +26,18 @@ func AuthMiddleware(controller *db.Controller) func(http.Handler) http.Handler {
 				return
 			}
 
-			user, ok, err := auth.CheckSession(controller, session.Value)
+			user, ok, err := sessionController.CheckSession(session.Value)
 			if err != nil {
 				log.Println(err)
 				http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 			if !ok {
+				sessionCookie, err := sessionController.RemoveSession(user.GakujoUsername)
+				if err != nil {
+					log.Println(err)
+				}
+				http.SetCookie(rw, sessionCookie)
 				log.Println("Session is not valid")
 				http.Error(rw, "Session is not valid. Please login again.", http.StatusUnauthorized)
 				return
