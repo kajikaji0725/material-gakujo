@@ -49,6 +49,7 @@ func (sc *SessionController) RemoveSession(gakujoUsername string) (*http.Cookie,
 		Name: "GAKUJO_SESSION",
 		//Secure:   true,
 		HttpOnly: true,
+		Path:     "/",
 	}
 
 	return &cookie, nil
