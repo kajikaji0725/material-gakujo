@@ -9,7 +9,7 @@ import (
 type ClassNotice struct {
 	ID          int `gorm:"primaryKey;autoIncrement"`
 	UserID      int
-	ClassNotice model.SeisekiRow `gorm:"embedded;embeddedPrefix:class_notice_"`
+	ClassNotice model.ClassNoticeRow `gorm:"embedded;embeddedPrefix:class_notice_"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
