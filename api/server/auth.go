@@ -73,12 +73,13 @@ func (api *ApiServer) RegistNewUser(rw http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 
 	if gakujoPassword == "" || gakujoUsername == "" || username == "" || email == "" {
+		log.Println("invalid input")
 		http.Error(rw, "Invalid input", http.StatusBadRequest)
 		return
 	}
 
 	if err := checkGakujoUser(gakujoUsername, gakujoPassword); err != nil {
-		log.Println(err)
+		log.Println("gakujo login failed")
 		http.Error(rw, "Could not login to gakujo. You might have set wrong user info.", http.StatusUnauthorized)
 		return
 	}
